@@ -1,0 +1,8 @@
+<library path="pca9685_pi_hw_interface">
+    <class name="rpi_pca9685_hw_interface/Pca9685PiHwInterface"
+           type="rpi_pca9685_hw_interface::Pca9685PiHwInterface"
+           base_class_type="hardware_interface::SystemInterface">
+        <description>
+            The ros2_control PCA9685 is using a system hardware interface-type. It publishes PWM commands (which are mapped to servo positions.) </description>
+    </class>
+</library>

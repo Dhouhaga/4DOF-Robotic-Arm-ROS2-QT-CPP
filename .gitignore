@@ -1,0 +1,11 @@
+# ROS 2 workspace artifacts
+/build/
+/install/
+/log/
+
+# Qt dashboard build output and Qt Creator user files
+/dashboard/**/build/
+*.user
+
+# Local editor settings
+/.vscode/

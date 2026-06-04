@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<robot name="pca9685_robot">
+
+
+  <link name="base_link"/>
+
+
+  <joint name="servo_pan_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="servo_pan_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="2.0944" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="servo_pan_link"/>
+
+  <joint name="servo_tilt_joint" type="revolute">
+    <parent link="servo_pan_link"/>
+    <child link="servo_tilt_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0" upper="2.0944" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="servo_tilt_link"/>
+
+  <joint name="gripper_joint" type="revolute">
+    <parent link="servo_tilt_link"/>
+    <child link="gripper_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="2.0944" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="gripper_link"/>
+
+  <joint name="wrist_joint" type="revolute">
+    <parent link="gripper_link"/>
+    <child link="wrist_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="0" upper="2.0944" effort="0" velocity="0"/>
+  </joint>
+
+  <link name="wrist_link"/>
+
+
+  <ros2_control name="PCA9685System" type="system">
+    <hardware>
+      <plugin>rpi_pca9685_hw_interface/Pca9685PiHwInterface</plugin>
+      <param name="i2c_bus">1</param>
+      <param name="i2c_address">0x40</param>
+      <param name="pwm_frequency">50</param>
+    </hardware>
+
+
+    <joint name="servo_pan_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <param name="channel">0</param>
+      <param name="min_pulse_us">500</param>
+      <param name="max_pulse_us">2400</param>
+      <param name="min_angle_deg">0</param>
+      <param name="max_angle_deg">170</param>
+    </joint>
+
+
+    <joint name="servo_tilt_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <param name="channel">1</param>
+      <param name="min_pulse_us">500</param>
+      <param name="max_pulse_us">2400</param>
+      <param name="min_angle_deg">0</param>
+      <param name="max_angle_deg">170</param>
+    </joint>
+
+
+    <joint name="gripper_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <param name="channel">2</param>
+      <param name="min_pulse_us">500</param>
+      <param name="max_pulse_us">2400</param>
+      <param name="min_angle_deg">0</param>
+      <param name="max_angle_deg">170</param>
+    </joint>
+
+
+    <joint name="wrist_joint">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <param name="channel">3</param>
+      <param name="min_pulse_us">500</param>
+      <param name="max_pulse_us">2400</param>
+      <param name="min_angle_deg">0</param>
+      <param name="max_angle_deg">170</param>
+    </joint>
+  </ros2_control>
+</robot>

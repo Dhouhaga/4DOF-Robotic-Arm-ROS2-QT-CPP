@@ -1,0 +1,252 @@
+<?xml version="1.0"?>
+<robot name="robotic_arm">
+
+  <!-- ==================== MATERIALS ==================== -->
+  <material name="white">
+    <color rgba="0.9 0.9 0.9 1.0"/>
+  </material>
+  <material name="grey">
+    <color rgba="0.5 0.5 0.5 1.0"/>
+  </material>
+  <material name="dark_grey">
+    <color rgba="0.2 0.2 0.2 1.0"/>
+  </material>
+  <material name="orange">
+    <color rgba="1.0 0.5 0.0 1.0"/>
+  </material>
+
+  <!-- ==================== LINKS ==================== -->
+
+  <!-- BASE LINK (fixed to world) -->
+  <!-- Cylinder: radius 0.04m, height 0.06m (base to shoulder = 6cm) -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.06"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.06"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.2"/>
+      <origin xyz="0 0 0.03"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0"
+               iyy="0.0001" iyz="0"
+               izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <!-- LOWER ARM (shoulder to elbow = 8cm) -->
+  <link name="lower_arm">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.08"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.08"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <origin xyz="0 0 0.04"/>
+      <inertia ixx="0.00003" ixy="0" ixz="0"
+               iyy="0.00003" iyz="0"
+               izz="0.000003"/>
+    </inertial>
+  </link>
+
+  <!-- UPPER ARM (elbow to wrist = 8cm) -->
+  <link name="upper_arm">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.08"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.02 0.08"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.05"/>
+      <origin xyz="0 0 0.04"/>
+      <inertia ixx="0.00003" ixy="0" ixz="0"
+               iyy="0.00003" iyz="0"
+               izz="0.000003"/>
+    </inertial>
+  </link>
+
+  <!-- WRIST / GRIPPER BASE (7cm total gripper length) -->
+  <link name="wrist">
+    <visual>
+      <origin xyz="0 0 0.035" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.025 0.07"/>
+      </geometry>
+      <material name="grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.035" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.025 0.025 0.07"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.03"/>
+      <origin xyz="0 0 0.035"/>
+      <inertia ixx="0.00002" ixy="0" ixz="0"
+               iyy="0.00002" iyz="0"
+               izz="0.000002"/>
+    </inertial>
+  </link>
+
+  <!-- GRIPPER PALM (base of claw, fixed to wrist tip) -->
+  <link name="gripper_palm">
+    <visual>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.04 0.03"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.015" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.02 0.04 0.03"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0.015"/>
+      <inertia ixx="0.000001" ixy="0" ixz="0"
+               iyy="0.000001" iyz="0"
+               izz="0.000001"/>
+    </inertial>
+  </link>
+
+  <!-- LEFT FINGER -->
+  <link name="finger_left">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.008 0.006 0.04"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.008 0.006 0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.005"/>
+      <origin xyz="0 0 0.02"/>
+      <inertia ixx="0.0000005" ixy="0" ixz="0"
+               iyy="0.0000005" iyz="0"
+               izz="0.0000005"/>
+    </inertial>
+  </link>
+
+  <!-- RIGHT FINGER -->
+  <link name="finger_right">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.008 0.006 0.04"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.02" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.008 0.006 0.04"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.005"/>
+      <origin xyz="0 0 0.02"/>
+      <inertia ixx="0.0000005" ixy="0" ixz="0"
+               iyy="0.0000005" iyz="0"
+               izz="0.0000005"/>
+    </inertial>
+  </link>
+
+  <!-- ==================== JOINTS ==================== -->
+
+  <!-- WAIST: base_link → lower_arm, rotation around Z axis -->
+  <!-- Origin at top of base column (z = 0.06m) -->
+  <joint name="waist" type="revolute">
+    <parent link="base_link"/>
+    <child link="lower_arm"/>
+    <origin xyz="0 0 0.06" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5708" upper="1.5708" effort="1.0" velocity="1.0"/>
+    <dynamics damping="0.1" friction="0.05"/>
+  </joint>
+
+  <!-- SHOULDER: lower_arm → upper_arm, rotation around Y axis -->
+  <!-- Origin at top of lower arm (z = 0.08m from lower_arm frame) -->
+  <joint name="shoulder" type="revolute">
+    <parent link="lower_arm"/>
+    <child link="upper_arm"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="1.0" velocity="1.0"/>
+    <dynamics damping="0.1" friction="0.05"/>
+  </joint>
+
+  <!-- ELBOW: upper_arm → wrist, rotation around Y axis -->
+  <!-- Origin at top of upper arm (z = 0.08m from upper_arm frame) -->
+  <joint name="elbow" type="revolute">
+    <parent link="upper_arm"/>
+    <child link="wrist"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="1.0" velocity="1.0"/>
+    <dynamics damping="0.1" friction="0.05"/>
+  </joint>
+
+  <!-- PALM: wrist → gripper_palm, fixed at tip of wrist -->
+  <joint name="palm_joint" type="fixed">
+    <parent link="wrist"/>
+    <child link="gripper_palm"/>
+    <origin xyz="0 0 0.07" rpy="0 0 0"/>
+  </joint>
+
+  <!-- LEFT FINGER: opens outward in -Y direction -->
+  <joint name="gripper" type="revolute">
+    <parent link="gripper_palm"/>
+    <child link="finger_left"/>
+    <origin xyz="0 -0.018 0.03" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-0.5" upper="0.0" effort="0.5" velocity="1.0"/>
+    <dynamics damping="0.05" friction="0.02"/>
+  </joint>
+
+  <!-- RIGHT FINGER: mirrors left finger via mimic (same servo) -->
+  <joint name="finger_right_joint" type="revolute">
+    <parent link="gripper_palm"/>
+    <child link="finger_right"/>
+    <origin xyz="0 0.018 0.03" rpy="0 0 0"/>
+    <axis xyz="-1 0 0"/>
+    <limit lower="-0.5" upper="0.0" effort="0.5" velocity="1.0"/>
+    <dynamics damping="0.05" friction="0.02"/>
+    <mimic joint="gripper" multiplier="1.0" offset="0.0"/>
+  </joint>
+
+</robot>

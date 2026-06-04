@@ -1,0 +1,25 @@
+PCA9685System:
+  ros__parameters:
+    i2c_bus: 1
+    i2c_address: 0x40
+    pwm_frequency: 50
+
+controller_manager:
+  ros__parameters:
+    update_rate: 50  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    forward_position_controller:
+      type: forward_command_controller/ForwardCommandController
+
+forward_position_controller:
+  ros__parameters:
+    joints:
+      - servo_pan_joint
+      - servo_tilt_joint
+      - gripper_joint
+      - wrist_joint
+
+    interface_name: position
