@@ -60,12 +60,12 @@ flowchart LR
         subgraph SERVO["Servos"]
             S1["CH0 — Waist"]
             S2["CH1 — Shoulder"]
-            S3["CH2 — Elbow"]
+            S3["CH2 — Base"]
             S4["CH3 — Gripper"]
         end
     end
 
-    QT -->|"/arm_controller/commands\nFloat64MultiArray [base°, shoulder°, elbow°, gripper°]"| Router
+    QT -->|"/arm_controller/commands\nFloat64MultiArray [base°, shoulder°, Base°, gripper°]"| Router
     Router -->|"/forward_position_controller/commands"| CM
     Router -->|"/arm_viz/commands"| Bridge
     Bridge -->|"/joint_states\nsensor_msgs/JointState"| RSP
@@ -116,7 +116,7 @@ A Python package providing the visualisation side of the digital twin:
 
 - **`joint_state_bridge`** — ROS 2 node that subscribes to `/arm_viz/commands` (`Float64MultiArray`, angles in degrees), converts them to radians (mapping 90° → 0 rad neutral for revolute joints; separate linear mapping for the gripper), and re-publishes as `sensor_msgs/JointState` at 30 Hz so RViz2 always has a fresh transform even between commands.
 - **`digital_twin.launch.py`** — starts `robot_state_publisher` (reads `arm.urdf`), `joint_state_bridge`, and `rviz2`.
-- **`arm.urdf`** — standalone URDF for the visualisation: `base_link → lower_arm (waist) → upper_arm (shoulder) → wrist (elbow) → gripper_palm → finger_left/right`. The right finger uses a `<mimic>` tag to mirror the left finger joint.
+- **`arm.urdf`** — standalone URDF for the visualisation: `base_link → lower_arm (waist) → upper_arm (shoulder) → wrist (Base) → gripper_palm → finger_left/right`. The right finger uses a `<mimic>` tag to mirror the left finger joint.
 
 **Key files:** `joint_state_bridge.py`, `digital_twin.launch.py`, `arm.urdf`
 
@@ -137,7 +137,7 @@ A Python package providing the visualisation side of the digital twin:
 
 A Qt 6 desktop application providing operator control:
 
-- Four sliders + spin boxes (0–180°) for waist, shoulder, elbow, and gripper.
+- Four sliders + spin boxes (0–180°) for waist, shoulder, Base, and gripper.
 - **Live controller detection** — polls `ros2 topic info /arm_controller/commands` every 3 s to check for active subscribers; shows a colour-coded status dot (orange = waiting, green = connected, red = lost).
 - **Send / Reset / Emergency Stop** buttons. Emergency stop publishes `[0, 0, 0, 0]` immediately.
 - Publishes via a fire-and-forget `ros2 topic pub -1` subprocess, inheriting the shell environment (so `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, etc. propagate correctly).
@@ -189,7 +189,7 @@ The `forward_position_controller` on the Pi expects **radians** — conversion h
 |---|---|---|---|---|
 | 0 | Base | `waist` | 0 | Z |
 | 1 | Shoulder | `shoulder` | 1 | Y |
-| 2 | Wrist / Elbow | `elbow` | 2 | Y |
+| 2 | Wrist / Base | `Base` | 2 | Y |
 | 3 | Gripper | `gripper` | 3 | X (finger) |
 
 Neutral position for all revolute joints: **90°** (maps to 0 rad).
@@ -205,7 +205,7 @@ Raspberry Pi 4
         └── PCA9685 (address 0x40)
               ├── CH0 → Waist servo   (SG90 / MG996R)
               ├── CH1 → Shoulder servo
-              ├── CH2 → Elbow servo
+              ├── CH2 → Base servo
               └── CH3 → Gripper servo
 ```
 
