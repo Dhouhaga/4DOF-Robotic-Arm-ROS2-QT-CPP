@@ -2,8 +2,6 @@
 
 A complete ROS 2 (Jazzy) control stack for a 4-degree-of-freedom servo arm driven by a **PCA9685 PWM controller** on a Raspberry Pi, with a **Qt dashboard** and **RViz2 digital twin** running on a desktop PC.
 
----
-
 ## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
@@ -16,8 +14,6 @@ A complete ROS 2 (Jazzy) control stack for a 4-degree-of-freedom servo arm drive
 - [Building & Running](#building--running)
 - [Known Limitations & TODOs](#known-limitations--todos)
 
----
-
 ## Architecture Overview
 
 The system is split across two machines connected over the same ROS 2 network (same `ROS_DOMAIN_ID`):
@@ -29,7 +25,6 @@ The system is split across two machines connected over the same ROS 2 network (s
 
 The user moves sliders in the Qt dashboard → a `Float64MultiArray` of four joint angles is published on `/arm_controller/commands` → the `command_router` node fans it out simultaneously to the **hardware controller** (real servos) and to the **digital twin bridge** (RViz2 visualisation), so both update in lock-step.
 
----
 
 ## System Diagram
 
@@ -77,7 +72,6 @@ flowchart LR
     PCA9685 -->|"PWM signals"| S1 & S2 & S3 & S4
 ```
 
----
 
 ## Package Descriptions
 
@@ -92,7 +86,6 @@ Implements the `hardware_interface::SystemInterface` lifecycle plugin for ros2_c
 
 **Key files:** `i2c_driver.cpp`, `pca9685_driver.cpp`, `pca9685_pi_hw_interface.cpp`
 
----
 
 ### `pca9685_hw_controller` — Controller Manager Bringup
 > Runs on the **Raspberry Pi**.
@@ -107,7 +100,6 @@ Starts:
 
 **Key files:** `controllers.yaml`, `robot_4servo_launch.py`
 
----
 
 ### `arm_viz` — Digital Twin (RViz2)
 > Runs on the **Desktop PC**.
@@ -120,7 +112,6 @@ A Python package providing the visualisation side of the digital twin:
 
 **Key files:** `joint_state_bridge.py`, `digital_twin.launch.py`, `arm.urdf`
 
----
 
 ### `arm_controller` — Command Router + GUI Bringup
 > Runs on the **Desktop PC**.
@@ -130,7 +121,6 @@ A Python package providing the visualisation side of the digital twin:
 
 **Key files:** `command_router.cpp`, `controller.launch.py`
 
----
 
 ### `arm_controller_gui` — Qt Dashboard
 > Runs on the **Desktop PC**.
@@ -145,7 +135,6 @@ A Qt 6 desktop application providing operator control:
 
 **Key files:** `mainwindow.cpp`, `mainwindow.h`
 
----
 
 ## Technology Stack
 
@@ -166,7 +155,6 @@ A Qt 6 desktop application providing operator control:
 | OS — Pi | Ubuntu 24.04 Server (headless) |
 | OS — PC | Ubuntu 24.04 Desktop |
 
----
 
 ## Topic & Interface Map
 
@@ -181,7 +169,6 @@ A Qt 6 desktop application providing operator control:
 All values in `/arm_controller/commands` are **degrees (0–180)**.
 The `forward_position_controller` on the Pi expects **radians** — conversion happens inside `Pca9685PiHwInterface::angle_to_pulse_width`.
 
----
 
 ## Joint Mapping
 
@@ -195,7 +182,6 @@ The `forward_position_controller` on the Pi expects **radians** — conversion h
 Neutral position for all revolute joints: **90°** (maps to 0 rad).
 Gripper: 0° = open (0 rad), 180° = closed (−0.5 rad).
 
----
 
 ## Hardware Setup
 
@@ -221,7 +207,6 @@ Verify the PCA9685 is visible:
 i2cdetect -y 1   # should show 0x40
 ```
 
----
 
 ## Building & Running
 
@@ -255,7 +240,6 @@ ros2 launch arm_controller controller.launch.py
 
 Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network (or connected via a VPN/DDS bridge).
 
----
 
 ## Known Limitations & TODOs
 
