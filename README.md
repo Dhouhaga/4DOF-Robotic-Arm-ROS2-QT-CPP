@@ -1,156 +1,252 @@
-# Robotic Arm ROS 2 Workspace
+# 4-DOF Robotic Arm — ROS 2 Control Stack
 
-This repository contains a ROS 2 Jazzy workspace for a Raspberry Pi driven robotic arm, plus a separate Qt dashboard application.
+A complete ROS 2 (Jazzy) control stack for a 4-degree-of-freedom servo arm driven by a **PCA9685 PWM controller** on a Raspberry Pi, with a **Qt dashboard** and **RViz2 digital twin** running on a desktop PC.
 
-The project is split between two machines:
+---
 
-- Raspberry Pi: runs the hardware-facing ROS 2 stack for the PCA9685 servo driver.
-- PC: runs the URDF-based visualization and the Qt dashboard.
+## Table of Contents
 
-I did not use the URDF on the Raspberry Pi because it runs Ubuntu 24 in headless mode, so there is no GUI there. The URDF, RViz, and the Qt dashboard are used on the PC only.
+- [Architecture Overview](#architecture-overview)
+- [System Diagram](#system-diagram)
+- [Package Descriptions](#package-descriptions)
+- [Technology Stack](#technology-stack)
+- [Topic & Interface Map](#topic--interface-map)
+- [Joint Mapping](#joint-mapping)
+- [Hardware Setup](#hardware-setup)
+- [Building & Running](#building--running)
+- [Known Limitations & TODOs](#known-limitations--todos)
 
-## Architecture
+---
+
+## Architecture Overview
+
+The system is split across two machines connected over the same ROS 2 network (same `ROS_DOMAIN_ID`):
+
+| Machine | Role |
+|---|---|
+| **Desktop PC** | Qt dashboard (user input), `arm_controller` (command router), `arm_viz` + RViz2 (digital twin) |
+| **Raspberry Pi 4** | `pca9685_pi_hw_interface` (ros2_control hardware plugin), PCA9685 over I²C, physical servos |
+
+The user moves sliders in the Qt dashboard → a `Float64MultiArray` of four joint angles is published on `/arm_controller/commands` → the `command_router` node fans it out simultaneously to the **hardware controller** (real servos) and to the **digital twin bridge** (RViz2 visualisation), so both update in lock-step.
+
+---
+
+## System Diagram
 
 ```mermaid
 flowchart LR
-    subgraph PC[PC / Desktop]
-        Dashboard[Qt Dashboard]
-        Viz[arm_viz + RViz2]
-        URDF[URDF / robot_state_publisher]
-        Router[arm_controller / command_router]
+    subgraph PC["🖥️  PC / Desktop  (Ubuntu + GUI)"]
+        direction TB
+        QT["Qt Dashboard\narm_controller_gui\n(sliders 0–180°)"]
+        Router["command_router\narm_controller pkg"]
+        subgraph VIZ["arm_viz"]
+            Bridge["joint_state_bridge\n(deg → rad)"]
+            RSP["robot_state_publisher"]
+            RViz["RViz2\ndigital twin"]
+        end
     end
 
-    subgraph PI[Raspberry Pi]
-        HW[pca9685_pi_hw_interface]
-        Control[pca9685_hw_controller]
-        PCA[PCA9685 I2C PWM board]
+    subgraph PI["🍓  Raspberry Pi 4  (Ubuntu 24 headless)"]
+        direction TB
+        CM["controller_manager\n(ros2_control)"]
+        HW["pca9685_pi_hw_interface\n(SystemInterface plugin)"]
+        subgraph DRIVER["Driver Layer"]
+            PCA["Pca9685Driver"]
+            I2C["I2cDriver\n/dev/i2c-1"]
+        end
+        subgraph SERVO["Hardware"]
+            S1["Servo 0\nWaist"]
+            S2["Servo 1\nShoulder"]
+            S3["Servo 2\nElbow"]
+            S4["Servo 3\nGripper"]
+        end
     end
 
-    Dashboard --> Router
-    Router --> HW
-    URDF --> Viz
-    Control --> HW
+    QT -->|"/arm_controller/commands\nFloat64MultiArray [base°, shoulder°, elbow°, gripper°]"| Router
+    Router -->|"/forward_position_controller/commands"| CM
+    Router -->|"/arm_viz/commands"| Bridge
+    Bridge -->|"/joint_states\nsensor_msgs/JointState"| RSP
+    RSP --> RViz
+    CM --> HW
     HW --> PCA
+    PCA --> I2C
+    I2C --> S1 & S2 & S3 & S4
 ```
 
-### Main pieces
+---
 
-Here are improved package descriptions based on your actual code:
+## Package Descriptions
 
-## Main pieces
+### `pca9685_pi_hw_interface` — Hardware Interface Plugin
+> Runs on the **Raspberry Pi**.
 
-- `src/pca9685_pi_hw_interface`: ROS2 hardware interface plugin that manages servo control via the PCA9685 16-channel PWM driver over I2C. Converts joint angle commands to PWM pulse widths and exports position command/state interfaces for each servo joint.
+Implements the `hardware_interface::SystemInterface` lifecycle plugin for ros2_control. Owns the full driver stack:
 
-- `src/pca9685_hw_controller`: Launch configuration and URDF setup for a 4-servo robotic arm. Includes the `ros2_control_node` with controller manager, the `forward_position_controller` for joint trajectory tracking, and `robot_state_publisher` for state broadcasting.
+- **`I2cDriver`** — thin RAII wrapper around `/dev/i2c-N` using Linux `ioctl`. Opens the bus, sets 7-bit slave addressing, and provides `read_byte` / `write_byte` primitives.
+- **`Pca9685Driver`** — register-level driver for the NXP PCA9685 16-channel PWM IC. Handles oscillator setup, prescaler calculation (with empirical 0.8449× frequency correction for real-world oscillator drift), per-channel pulse-width writes, sleep/wake, and a convenience brightness API.
+- **`Pca9685PiHwInterface`** — ros2_control plugin. Reads joint parameters (`channel`, `min_pulse_us`, `max_pulse_us`, `min_angle_deg`, `max_angle_deg`) from the URDF `<ros2_control>` tag, exports `position` state and command interfaces for each joint, and converts commanded angles to PCA9685 PWM counts via a linear pulse-width formula. Writes are staggered 8 ms per joint to avoid I²C bus contention and inrush current spikes.
 
-- `src/arm_controller`: Command multiplexer node that receives joint position commands on `/arm_controller/commands` and simultaneously forwards them to both the hardware controller (`/forward_position_controller/commands`) and the visualization system (`/arm_viz/commands`).
+**Key files:** `i2c_driver.cpp`, `pca9685_driver.cpp`, `pca9685_pi_hw_interface.cpp`
 
-- `src/arm_viz`: PC-side visualization package with URDF model publishing, `robot_state_publisher`, and a `joint_state_bridge` node (Python) that converts degree-based commands to radians and publishes joint states for RViz2 rendering.
+---
 
-- `dashboard/`: standalone Qt dashboard application for commanding the arm, built and run on the PC only.
+### `pca9685_hw_controller` — Controller Manager Bringup
+> Runs on the **Raspberry Pi**.
 
-- `deploy.sh`: deployment script that syncs the ROS 2 workspace to the Raspberry Pi and triggers remote builds.
-  
-## Dependencies
+A thin launch-and-config package. Contains no C++ source — just the URDF (`robot_with_pca9685.urdf`), the ros2_control controllers config (`controllers.yaml`), and the bringup launch file (`robot_4servo_launch.py`).
 
-### Common tools
+Starts:
+- `robot_state_publisher` (with the URDF)
+- `ros2_control_node` (controller manager, 50 Hz update rate)
+- `joint_state_broadcaster` spawner
+- `forward_position_controller` spawner (accepts `Float64MultiArray` position commands)
 
-- Ubuntu 24.04
-- ROS 2 Jazzy
-- `git`
-- `cmake`
-- `build-essential`
-- `python3-colcon-common-extensions`
+**Key files:** `controllers.yaml`, `robot_4servo_launch.py`
 
-### Raspberry Pi dependencies
+---
 
-Install the ROS packages needed by the hardware side:
+### `arm_viz` — Digital Twin (RViz2)
+> Runs on the **Desktop PC**.
 
-- `ros-jazzy-hardware-interface`
-- `ros-jazzy-ros2-control`
-- `ros-jazzy-controller-manager`
+A Python package providing the visualisation side of the digital twin:
 
-You also need I2C enabled on the Pi and access to the PCA9685 board, typically on `/dev/i2c-1`.
+- **`joint_state_bridge`** — ROS 2 node that subscribes to `/arm_viz/commands` (`Float64MultiArray`, angles in degrees), converts them to radians (mapping 90° → 0 rad neutral for revolute joints; separate linear mapping for the gripper), and re-publishes as `sensor_msgs/JointState` at 30 Hz so RViz2 always has a fresh transform even between commands.
+- **`digital_twin.launch.py`** — starts `robot_state_publisher` (reads `arm.urdf`), `joint_state_bridge`, and `rviz2`.
+- **`arm.urdf`** — standalone URDF for the visualisation: `base_link → lower_arm (waist) → upper_arm (shoulder) → wrist (elbow) → gripper_palm → finger_left/right`. The right finger uses a `<mimic>` tag to mirror the left finger joint.
 
-### PC dependencies
+**Key files:** `joint_state_bridge.py`, `digital_twin.launch.py`, `arm.urdf`
 
-Install the visualization and desktop packages:
+---
 
-- `ros-jazzy-rviz2`
-- `ros-jazzy-robot-state-publisher`
-- `ros-jazzy-xacro`
-- `ros-jazzy-ros2-control`
-- `ros-jazzy-controller-manager`
-- Qt development packages, such as `qt6-base-dev` or `qtbase5-dev` depending on your Qt version
+### `arm_controller` — Command Router + GUI Bringup
+> Runs on the **Desktop PC**.
 
-## Build The ROS 2 Workspace
+- **`command_router`** (C++) — subscribes to `/arm_controller/commands` and republishes the same message to both `/forward_position_controller/commands` (hardware) and `/arm_viz/commands` (digital twin) simultaneously. Acts as a single fan-out point so upstream code only needs one topic.
+- **`controller.launch.py`** — starts `command_router` and includes `arm_viz`'s `digital_twin.launch.py`.
 
-From the repository root:
+**Key files:** `command_router.cpp`, `controller.launch.py`
 
-```bash
-source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install
-source install/setup.bash
+---
+
+### `arm_controller_gui` — Qt Dashboard
+> Runs on the **Desktop PC**.
+
+A Qt 6 desktop application providing operator control:
+
+- Four sliders + spin boxes (0–180°) for waist, shoulder, elbow, and gripper.
+- **Live controller detection** — polls `ros2 topic info /arm_controller/commands` every 3 s to check for active subscribers; shows a colour-coded status dot (orange = waiting, green = connected, red = lost).
+- **Send / Reset / Emergency Stop** buttons. Emergency stop publishes `[0, 0, 0, 0]` immediately.
+- Publishes via a fire-and-forget `ros2 topic pub -1` subprocess, inheriting the shell environment (so `ROS_DOMAIN_ID`, `RMW_IMPLEMENTATION`, etc. propagate correctly).
+- Right panel shows a simulated gripper state and object detection readout (placeholder for a future vision pipeline).
+
+**Key files:** `mainwindow.cpp`, `mainwindow.h`
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| ROS 2 distribution | **Jazzy Jalisco** |
+| Hardware interface | `ros2_control` — `hardware_interface::SystemInterface` |
+| Controllers | `forward_command_controller`, `joint_state_broadcaster` |
+| PWM IC | **NXP PCA9685** (16-ch, 12-bit, up to 1.6 kHz) via I²C |
+| I²C | Linux kernel `i2c-dev` (`/dev/i2c-1`), `ioctl` |
+| Plugin system | `pluginlib` |
+| Visualisation | **RViz2**, `robot_state_publisher`, URDF |
+| Desktop GUI | **Qt 6** (`QMainWindow`, `QSlider`, `QProcess`) |
+| Desktop language | C++ 17 (ros2_control plugin, command router, Qt app) |
+| Pi language | C++ 17 (driver stack) |
+| Bridge language | Python 3 (`rclpy`) |
+| Build system | `ament_cmake` (C++ packages), `ament_python` (arm_viz) |
+| OS — Pi | Ubuntu 24.04 Server (headless) |
+| OS — PC | Ubuntu 24.04 Desktop |
+
+---
+
+## Topic & Interface Map
+
+```
+/arm_controller/commands          std_msgs/Float64MultiArray   Qt → command_router
+/forward_position_controller/commands  std_msgs/Float64MultiArray   command_router → Pi CM
+/arm_viz/commands                 std_msgs/Float64MultiArray   command_router → joint_state_bridge
+/joint_states                     sensor_msgs/JointState       joint_state_bridge → robot_state_publisher
+/joint_state_broadcaster/...      sensor_msgs/JointState       Pi hardware → (feedback)
 ```
 
-If you want to clean the workspace, remove `build/`, `install/`, and `log/`.
+All values in `/arm_controller/commands` are **degrees (0–180)**.
+The `forward_position_controller` on the Pi expects **radians** — conversion happens inside `Pca9685PiHwInterface::angle_to_pulse_width`.
 
-## Run On The Raspberry Pi
+---
 
-This side is headless and should only run the hardware/control stack.
+## Joint Mapping
 
-1. Copy the ROS 2 packages to the Pi:
+| Index | Dashboard label | URDF joint (`arm.urdf`) | Servo channel | Axis |
+|---|---|---|---|---|
+| 0 | Base | `waist` | 0 | Z |
+| 1 | Shoulder | `shoulder` | 1 | Y |
+| 2 | Wrist / Elbow | `elbow` | 2 | Y |
+| 3 | Gripper | `gripper` | 3 | X (finger) |
 
-```bash
-./deploy.sh
+Neutral position for all revolute joints: **90°** (maps to 0 rad).
+Gripper: 0° = open (0 rad), 180° = closed (−0.5 rad).
+
+---
+
+## Hardware Setup
+
+```
+Raspberry Pi 4
+  └── GPIO I²C (SDA = pin 3, SCL = pin 5)  /dev/i2c-1
+        └── PCA9685 (address 0x40)
+              ├── CH0 → Waist servo   (SG90 / MG996R)
+              ├── CH1 → Shoulder servo
+              ├── CH2 → Elbow servo
+              └── CH3 → Gripper servo
 ```
 
-2. On the Pi, build the workspace and source it:
+Enable I²C on the Pi:
+```bash
+sudo raspi-config  # Interface Options → I2C → Enable
+# or
+echo "dtparam=i2c_arm=on" | sudo tee -a /boot/firmware/config.txt
+```
+
+Verify the PCA9685 is visible:
+```bash
+i2cdetect -y 1   # should show 0x40
+```
+
+---
+
+## Building & Running
+
+### On the Raspberry Pi
 
 ```bash
-source /opt/ros/jazzy/setup.bash
+# Build
 cd ~/ros2_ws
-colcon build --symlink-install
+colcon build --packages-select pca9685_pi_hw_interface pca9685_hw_controller
 source install/setup.bash
+
+# Launch (starts controller_manager + servos)
+ros2 launch pca9685_hw_controller robot_4servo_launch.py
 ```
 
-3. Launch the hardware/controller demo:
+### On the Desktop PC
 
 ```bash
-ros2 launch pca9685_hw_controller robot_4servo.launch.py
-```
-
-## Run On The PC
-
-The PC is where the URDF, RViz, and Qt dashboard run.
-
-1. Build and source the ROS 2 workspace:
-
-```bash
-source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install
+# Build
+cd ~/ros2_ws
+colcon build --packages-select arm_viz arm_controller
 source install/setup.bash
-```
 
-2. Start the visualization stack:
-
-```bash
+# Launch digital twin + command router
 ros2 launch arm_controller controller.launch.py
+
+# In a separate terminal — launch the Qt dashboard
+# (build with Qt Creator or CMake, then run the binary)
+./arm_controller_gui
 ```
 
-This launch starts the command router and includes the `arm_viz` digital twin launch.
-
-3. Build the Qt dashboard from the separate top-level `dashboard/dashboard` project:
-
-```bash
-cmake -S dashboard/dashboard -B dashboard/build
-cmake --build dashboard/build -j
-./dashboard/build/dashboard
-```
-
-## Notes
-
-- The Qt dashboard is intentionally kept on the PC only.
-- The URDF and RViz-based digital twin are also PC only.
-- The Pi side is used for hardware access and control, without GUI components.
-- If your Qt installation uses a different major version, keep the matching Qt dev package installed and let CMake detect it automatically.
+Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network.
