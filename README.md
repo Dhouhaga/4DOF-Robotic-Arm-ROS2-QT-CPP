@@ -35,7 +35,7 @@ The user moves sliders in the Qt dashboard → a `Float64MultiArray` of four joi
 
 ```mermaid
 flowchart LR
-    subgraph PC["PC / Desktop  (Ubuntu + GUI)"]
+    subgraph PC["PC (Ubuntu)"]
         direction TB
         QT["Qt Dashboard\narm_controller_gui\n(sliders 0–180°)"]
         Router["command_router\narm_controller pkg"]
