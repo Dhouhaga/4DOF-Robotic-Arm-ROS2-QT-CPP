@@ -35,13 +35,22 @@ flowchart LR
 
 ### Main pieces
 
-- `src/pca9685_pi_hw_interface`: ros2_control hardware interface for the Raspberry Pi and the PCA9685 driver.
-- `src/pca9685_hw_controller`: controller bringup for the PCA9685 robot, including `ros2_control_node` and the controllers.
-- `src/arm_controller`: command routing node used to forward user commands to the rest of the system.
-- `src/arm_viz`: digital twin side with URDF, `robot_state_publisher`, and RViz2.
-- `dashboard/`: standalone Qt dashboard application, built and run on the PC only.
-- `deploy.sh`: syncs the ROS 2 `src/` folder to the Raspberry Pi and builds the remote workspace there.
+Here are improved package descriptions based on your actual code:
 
+## Main pieces
+
+- `src/pca9685_pi_hw_interface`: ROS2 hardware interface plugin that manages servo control via the PCA9685 16-channel PWM driver over I2C. Converts joint angle commands to PWM pulse widths and exports position command/state interfaces for each servo joint.
+
+- `src/pca9685_hw_controller`: Launch configuration and URDF setup for a 4-servo robotic arm. Includes the `ros2_control_node` with controller manager, the `forward_position_controller` for joint trajectory tracking, and `robot_state_publisher` for state broadcasting.
+
+- `src/arm_controller`: Command multiplexer node that receives joint position commands on `/arm_controller/commands` and simultaneously forwards them to both the hardware controller (`/forward_position_controller/commands`) and the visualization system (`/arm_viz/commands`).
+
+- `src/arm_viz`: PC-side visualization package with URDF model publishing, `robot_state_publisher`, and a `joint_state_bridge` node (Python) that converts degree-based commands to radians and publishes joint states for RViz2 rendering.
+
+- `dashboard/`: standalone Qt dashboard application for commanding the arm, built and run on the PC only.
+
+- `deploy.sh`: deployment script that syncs the ROS 2 workspace to the Raspberry Pi and triggers remote builds.
+  
 ## Dependencies
 
 ### Common tools
