@@ -35,7 +35,7 @@ The user moves sliders in the Qt dashboard → a `Float64MultiArray` of four joi
 
 ```mermaid
 flowchart LR
-    subgraph PC["PC (Ubuntu)"]
+    subgraph PC["🖥️  PC / Desktop  (Ubuntu + GUI)"]
         direction TB
         QT["Qt Dashboard\narm_controller_gui\n(sliders 0–180°)"]
         Router["command_router\narm_controller pkg"]
@@ -46,19 +46,22 @@ flowchart LR
         end
     end
 
-    subgraph PI["Raspberry Pi 4  (Ubuntu 24 headless)"]
+    subgraph PI["🍓  Raspberry Pi 4  (Ubuntu 24 headless)"]
         direction TB
         CM["controller_manager\n(ros2_control)"]
         HW["pca9685_pi_hw_interface\n(SystemInterface plugin)"]
-        subgraph DRIVER["Driver Layer"]
-            PCA["Pca9685Driver"]
+        subgraph DRIVER["Driver Layer (software)"]
+            PCA_DRV["Pca9685Driver"]
             I2C["I2cDriver\n/dev/i2c-1"]
         end
-        subgraph SERVO["Hardware"]
-            S1["Servo 0\nWaist"]
-            S2["Servo 1\nShoulder"]
-            S3["Servo 2\nElbow"]
-            S4["Servo 3\nGripper"]
+        subgraph IC["Hardware IC"]
+            PCA9685["PCA9685\n16-ch PWM IC\n(0x40 via I²C)"]
+        end
+        subgraph SERVO["Servos"]
+            S1["CH0 — Waist"]
+            S2["CH1 — Shoulder"]
+            S3["CH2 — Elbow"]
+            S4["CH3 — Gripper"]
         end
     end
 
@@ -68,9 +71,10 @@ flowchart LR
     Bridge -->|"/joint_states\nsensor_msgs/JointState"| RSP
     RSP --> RViz
     CM --> HW
-    HW --> PCA
-    PCA --> I2C
-    I2C --> S1 & S2 & S3 & S4
+    HW --> PCA_DRV
+    PCA_DRV --> I2C
+    I2C -->|"I²C bus"| PCA9685
+    PCA9685 -->|"PWM signals"| S1 & S2 & S3 & S4
 ```
 
 ---
@@ -249,4 +253,14 @@ ros2 launch arm_controller controller.launch.py
 ./arm_controller_gui
 ```
 
-Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network.
+Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network (or connected via a VPN/DDS bridge).
+
+---
+
+## Known Limitations & TODOs
+
+- The `forward_position_controller` on the Pi expects **radians**, but the Qt dashboard sends **degrees**. Conversion must happen either in `command_router` or inside the hardware plugin — currently handled only by the hardware plugin's `angle_to_pulse_width`; the digital twin bridge converts independently.
+- The `Pca9685PiHwInterface` initialises the I²C driver inside `on_init()` rather than `on_configure()` — this prevents clean re-initialisation if the controller manager reconfigures without a full restart.
+- Joint names differ between `controllers.yaml` (`servo_pan_joint`, etc.) and `arm.urdf` (`waist`, `shoulder`, etc.) — the two URDFs are intentionally separate, but the index order sent by the dashboard must match both.
+- Object detection and gripper state in the Qt dashboard are currently simulated with random data — placeholder for a future vision pipeline.
+- The `arm.urdf` is missing a `world` → `base_link` fixed joint, which causes RViz2 to warn about a missing fixed frame.
