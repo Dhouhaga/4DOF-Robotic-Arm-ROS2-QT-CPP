@@ -35,7 +35,7 @@ The user moves sliders in the Qt dashboard → a `Float64MultiArray` of four joi
 
 ```mermaid
 flowchart LR
-    subgraph PC["🖥️  PC / Desktop  (Ubuntu + GUI)"]
+    subgraph PC["PC (Ubuntu GUI)"]
         direction TB
         QT["Qt Dashboard\narm_controller_gui\n(sliders 0–180°)"]
         Router["command_router\narm_controller pkg"]
@@ -46,7 +46,7 @@ flowchart LR
         end
     end
 
-    subgraph PI["🍓  Raspberry Pi 4  (Ubuntu 24 headless)"]
+    subgraph PI["Raspberry Pi 4  (Ubuntu headless)"]
         direction TB
         CM["controller_manager\n(ros2_control)"]
         HW["pca9685_pi_hw_interface\n(SystemInterface plugin)"]
