@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(demos_pca9685_hw_controller)
+project(pca9685_hw_controller)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 OLD)
 endif()

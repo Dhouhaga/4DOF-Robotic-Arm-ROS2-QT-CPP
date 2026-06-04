@@ -36,7 +36,7 @@ flowchart LR
 ### Main pieces
 
 - `src/pca9685_pi_hw_interface`: ros2_control hardware interface for the Raspberry Pi and the PCA9685 driver.
-- `src/demos_pca9685_hw_controller`: demo controller launch that brings up `ros2_control_node` and the controllers.
+- `src/pca9685_hw_controller`: controller bringup for the PCA9685 robot, including `ros2_control_node` and the controllers.
 - `src/arm_controller`: command routing node used to forward user commands to the rest of the system.
 - `src/arm_viz`: digital twin side with URDF, `robot_state_publisher`, and RViz2.
 - `dashboard/`: standalone Qt dashboard application, built and run on the PC only.
@@ -108,7 +108,7 @@ source install/setup.bash
 3. Launch the hardware/controller demo:
 
 ```bash
-ros2 launch demos_pca9685_hw_controller robot_3servo.launch.py
+ros2 launch pca9685_hw_controller robot_4servo.launch.py
 ```
 
 ## Run On The PC

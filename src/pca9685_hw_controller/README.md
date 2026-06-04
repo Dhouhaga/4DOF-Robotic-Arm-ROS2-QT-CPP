@@ -12,7 +12,7 @@ Quick start
 -----------
 1. In one terminal (on the Raspberry Pi) run the launch:
 
-    ros2 launch demos_pca9685_hw_controller robot_3servo.launch.py
+    ros2 launch pca9685_hw_controller robot_4servo.launch.py
 
 This launch will:
 - publish the `robot_description` (generated from `urdf/robot_with_pca9685.urdf.xacro` or using the pre-generated URDF),
@@ -30,7 +30,7 @@ Notes
 - Values are in degrees and will be clamped to each joint's `min_angle_deg`/`max_angle_deg` range defined in the URDF.
 - If you see errors about missing `robot_description` or invalid URDF, ensure `xacro` is installed or generate the URDF manually. Example command to render URDF from xacro:
 
-    xacro src/pca9685_pi_hw_controller/src/demos_pca9685_hw_interface/urdf/robot_with_pca9685.urdf.xacro -o src/pca9685_pi_hw_controller/src/demos_pca9685_hw_interface/urdf/robot_with_pca9685.urdf
+    xacro src/pca9685_hw_controller/urdf/robot_with_pca9685.urdf.xacro -o src/pca9685_hw_controller/urdf/robot_with_pca9685.urdf
 
 Developer tips
 --------------
@@ -39,7 +39,7 @@ Developer tips
 
 Files of interest
 -----------------
-- `launch/robot_3servo.launch.py` — launch file used by the demo.
+- `launch/robot_4servo.launch.py` — launch file used by the demo.
 - `config/controllers.yaml` — controller and hardware parameters (including `PCA9685System` hardware parameters).
 - `urdf/robot_with_pca9685.urdf.xacro` — robot description template.
 

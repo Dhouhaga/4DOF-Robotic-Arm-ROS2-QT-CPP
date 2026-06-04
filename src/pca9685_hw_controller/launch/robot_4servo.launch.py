@@ -6,7 +6,7 @@ import os
 
 
 def generate_launch_description():
-    pkg = get_package_share_directory('demos_pca9685_hw_controller')
+    pkg = get_package_share_directory('pca9685_hw_controller')
     urdf_path = os.path.join(pkg, 'urdf', 'robot_with_pca9685.urdf')
 
     with open(urdf_path, 'r', encoding='utf-8') as f:
