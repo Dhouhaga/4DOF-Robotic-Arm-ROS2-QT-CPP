@@ -10,7 +10,7 @@
 #include <QDebug>
 
 static const QString ROS_SETUP = "source /opt/ros/jazzy/setup.bash";
-static const QString TOPIC     = "/forward_position_controller/commands";
+static const QString TOPIC     = "/arm_controller/commands";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
