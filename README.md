@@ -22,7 +22,7 @@ flowchart LR
 
     subgraph PI[Raspberry Pi]
         HW[pca9685_pi_hw_interface]
-        Control[demos_pca9685_hw_controller]
+        Control[pca9685_hw_controller]
         PCA[PCA9685 I2C PWM board]
     end
 
