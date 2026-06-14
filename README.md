@@ -158,19 +158,6 @@ All values in `/arm_controller/commands` are **degrees (0–180)**.
 The `forward_position_controller` on the Pi expects **radians** — conversion happens inside `Pca9685PiHwInterface::angle_to_pulse_width`.
 
 
-## Joint Mapping
-
-| Index | Dashboard label | URDF joint (`arm.urdf`) | Servo channel | Axis |
-|---|---|---|---|---|
-| 0 | Base | `waist` | 0 | Z |
-| 1 | Shoulder | `shoulder` | 1 | Y |
-| 2 | Wrist / Base | `Base` | 2 | Y |
-| 3 | Gripper | `gripper` | 3 | X (finger) |
-
-Neutral position for all revolute joints: **90°** (maps to 0 rad).
-Gripper: 0° = open (0 rad), 180° = closed (−0.5 rad).
-
-
 ## Hardware Setup
 
 ```
