@@ -2,18 +2,6 @@
 
 A complete ROS 2 (Jazzy) control stack for a 4-degree-of-freedom servo arm driven by a **PCA9685 PWM controller** on a Raspberry Pi, with a **Qt dashboard** and **RViz2 digital twin** running on a desktop PC.
 
-## Table of Contents
-
-- [Architecture Overview](#architecture-overview)
-- [System Diagram](#system-diagram)
-- [Package Descriptions](#package-descriptions)
-- [Technology Stack](#technology-stack)
-- [Topic & Interface Map](#topic--interface-map)
-- [Joint Mapping](#joint-mapping)
-- [Hardware Setup](#hardware-setup)
-- [Building & Running](#building--running)
-- [Known Limitations & TODOs](#known-limitations--todos)
-
 ## Architecture Overview
 
 The system is split across two machines connected over the same ROS 2 network (same `ROS_DOMAIN_ID`):
