@@ -9,6 +9,3 @@
 
 # Local editor settings
 /.vscode/
-
-# Deploy file
-/deploy.sh
