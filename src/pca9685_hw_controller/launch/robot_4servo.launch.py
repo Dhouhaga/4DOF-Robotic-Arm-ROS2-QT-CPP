@@ -12,7 +12,7 @@ def generate_launch_description():
     with open(urdf_path, 'r', encoding='utf-8') as f:
         urdf_content = f.read()
 
-    # ✅ FORCER le type string explicite
+    # FORCER le type string explicite
     robot_description = ParameterValue(urdf_content, value_type=str)
 
     return LaunchDescription([
