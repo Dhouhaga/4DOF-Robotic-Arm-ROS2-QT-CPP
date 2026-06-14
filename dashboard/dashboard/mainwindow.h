@@ -75,4 +75,4 @@ private:
     void publishToROS2(double base, double shoulder, double wrist, double gripper);
 };
 
-#endif // MAINWINDOW_H
+#endif
