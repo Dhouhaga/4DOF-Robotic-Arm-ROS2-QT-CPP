@@ -213,13 +213,4 @@ ros2 launch arm_controller controller.launch.py
 ./arm_controller_gui
 ```
 
-Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network (or connected via a VPN/DDS bridge).
-
-
-## Known Limitations & TODOs
-
-- The `forward_position_controller` on the Pi expects **radians**, but the Qt dashboard sends **degrees**. Conversion must happen either in `command_router` or inside the hardware plugin — currently handled only by the hardware plugin's `angle_to_pulse_width`; the digital twin bridge converts independently.
-- The `Pca9685PiHwInterface` initialises the I²C driver inside `on_init()` rather than `on_configure()` — this prevents clean re-initialisation if the controller manager reconfigures without a full restart.
-- Joint names differ between `controllers.yaml` (`servo_pan_joint`, etc.) and `arm.urdf` (`waist`, `shoulder`, etc.) — the two URDFs are intentionally separate, but the index order sent by the dashboard must match both.
-- Object detection and gripper state in the Qt dashboard are currently simulated with random data — placeholder for a future vision pipeline.
-- The `arm.urdf` is missing a `world` → `base_link` fixed joint, which causes RViz2 to warn about a missing fixed frame.
+Make sure both machines share the same `ROS_DOMAIN_ID` and are on the same network.
