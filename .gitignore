@@ -11,4 +11,4 @@
 /.vscode/
 
 # Deploy file
-deploy.sh
+/deploy.sh
