@@ -123,26 +123,25 @@ A Qt 6 desktop application providing operator control:
 
 **Key files:** `mainwindow.cpp`, `mainwindow.h`
 
-
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
-| ROS 2 distribution | **Jazzy Jalisco** |
-| Hardware interface | `ros2_control` — `hardware_interface::SystemInterface` |
-| Controllers | `forward_command_controller`, `joint_state_broadcaster` |
-| PWM IC | **NXP PCA9685** (16-ch, 12-bit, up to 1.6 kHz) via I²C |
-| I²C | Linux kernel `i2c-dev` (`/dev/i2c-1`), `ioctl` |
-| Plugin system | `pluginlib` |
-| Visualisation | **RViz2**, `robot_state_publisher`, URDF |
-| Desktop GUI | **Qt 6** (`QMainWindow`, `QSlider`, `QProcess`) |
-| Desktop language | C++ 17 (ros2_control plugin, command router, Qt app) |
-| Pi language | C++ 17 (driver stack) |
-| Bridge language | Python 3 (`rclpy`) |
-| Build system | `ament_cmake` (C++ packages), `ament_python` (arm_viz) |
-| OS — Pi | Ubuntu 24.04 Server (headless) |
-| OS — PC | Ubuntu 24.04 Desktop |
-
+* **Core OS & Framework:**
+  * **OS — PC:** Ubuntu 24.04 Desktop
+  * **OS — Pi:** Ubuntu 24.04 Server (headless)
+  * **ROS 2 Distribution:** **Jazzy Jalisco**
+  * **Build System:** `ament_cmake` (C++ packages), `ament_python` (arm_viz)
+* **Control & Hardware Interface:**
+  * **Hardware Interface:** `ros2_control` — `hardware_interface::SystemInterface` via `pluginlib`
+  * **Controllers:** `forward_command_controller`, `joint_state_broadcaster`
+  * **PWM IC:** **NXP PCA9685** (16-ch, 12-bit, up to 1.6 kHz) via I²C
+  * **I²C Driver:** Linux kernel `i2c-dev` (`/dev/i2c-1`), `ioctl`
+* **Development Languages:**
+  * **Desktop Language:** C++ 17 (ros2_control plugin, command router, Qt app)
+  * **Pi Language:** C++ 17 (driver stack)
+  * **Bridge Language:** Python 3 (`rclpy`)
+* **User Interface & Visualisation:**
+  * **Desktop GUI:** **Qt 6** (`QMainWindow`, `QSlider`, `QProcess`)
+  * **Visualisation:** **RViz2**, `robot_state_publisher`, URDF
 
 ## Topic & Interface Map
 
