@@ -91,6 +91,8 @@ Starts:
 
 ### `arm_viz` — Digital Twin (RViz2)
 > Runs on the **Desktop PC**.
+<img width="794" height="425" alt="Screenshot from 2026-06-04 11-22-00" src="https://github.com/user-attachments/assets/bf3ddfd2-7090-4bf3-8159-80f92f71b424" />
+
 
 A Python package providing the visualisation side of the digital twin:
 
@@ -112,6 +114,8 @@ A Python package providing the visualisation side of the digital twin:
 
 ### `arm_controller_gui` — Qt Dashboard
 > Runs on the **Desktop PC**.
+<img width="1366" height="768" alt="Screenshot from 2026-06-01 09-36-22" src="https://github.com/user-attachments/assets/f6c56ad3-3e52-4626-bc81-76973f3173f1" />
+
 
 A Qt 6 desktop application providing operator control:
 
