@@ -147,6 +147,7 @@ A Qt 6 desktop application providing operator control:
 ## Topic & Interface Map
 
 | Topic | Msg Type | Role |
+|---|---|
 | /arm_controller/commands          | std_msgs/Float64MultiArray   | Qt → command_router |
 | /forward_position_controller/commands  | std_msgs/Float64MultiArray   | command_router → Pi CM |
 | /arm_viz/commands                 | std_msgs/Float64MultiArray   | command_router → joint_state_bridge |
