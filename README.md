@@ -126,8 +126,8 @@ A Qt 6 desktop application providing operator control:
 ## Technology Stack
 
 * **Core OS & Framework:**
-  * **OS — PC:** Ubuntu 24.04 Desktop
-  * **OS — Pi:** Ubuntu 24.04 Server (headless)
+  * **OS PC:** Ubuntu 24.04 Desktop
+  * **OS Pi:** Ubuntu 24.04 Server (headless)
   * **ROS 2 Distribution:** **Jazzy Jalisco**
   * **Build System:** `ament_cmake` (C++ packages), `ament_python` (arm_viz)
 * **Control & Hardware Interface:**
