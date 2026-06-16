@@ -114,7 +114,8 @@ A Python package providing the visualisation side of the digital twin:
 
 ### `arm_controller_gui` — Qt Dashboard
 > Runs on the **Desktop PC**.
-<img width="1366" height="768" alt="Screenshot from 2026-06-01 09-36-22" src="https://github.com/user-attachments/assets/f6c56ad3-3e52-4626-bc81-76973f3173f1" />
+<img width="1294" height="733" alt="Screenshot from 2026-06-16 12-15-45" src="https://github.com/user-attachments/assets/7c66dd38-338a-41ef-a652-fd33f34028c6" />
+
 
 
 A Qt 6 desktop application providing operator control:
