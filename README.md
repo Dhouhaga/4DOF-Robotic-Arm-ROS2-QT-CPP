@@ -146,13 +146,13 @@ A Qt 6 desktop application providing operator control:
 
 ## Topic & Interface Map
 
-```
-/arm_controller/commands          std_msgs/Float64MultiArray   Qt → command_router
-/forward_position_controller/commands  std_msgs/Float64MultiArray   command_router → Pi CM
-/arm_viz/commands                 std_msgs/Float64MultiArray   command_router → joint_state_bridge
-/joint_states                     sensor_msgs/JointState       joint_state_bridge → robot_state_publisher
-/joint_state_broadcaster/...      sensor_msgs/JointState       Pi hardware → (feedback)
-```
+| Topic | Msg Type | Role |
+| /arm_controller/commands          | std_msgs/Float64MultiArray   | Qt → command_router |
+| /forward_position_controller/commands  | std_msgs/Float64MultiArray   | command_router → Pi CM |
+| /arm_viz/commands                 | std_msgs/Float64MultiArray   | command_router → joint_state_bridge |
+| /joint_states                     | sensor_msgs/JointState       | joint_state_bridge → robot_state_publisher |
+| /joint_state_broadcaster/     | sensor_msgs/JointState       | Pi hardware → (feedback) |
+
 
 All values in `/arm_controller/commands` are **degrees (0–180)**.
 The `forward_position_controller` on the Pi expects **radians** — conversion happens inside `Pca9685PiHwInterface::angle_to_pulse_width`.
